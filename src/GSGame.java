@@ -1,10 +1,12 @@
 import java.util.ArrayList;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.Sound;
 import org.newdawn.slick.geom.Vector2f;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
@@ -23,13 +25,16 @@ public class GSGame extends BasicGameState {
 	int maxActionPoints = 993;
 
 	HitArea hitArea = null;
-
+	
 	public void init(GameContainer c, StateBasedGame game)
 			throws SlickException {
 		backgroundImage = new Image("res/background.png");
 		lifeForm = new Image("res/LifeForm.png");
 		player = new LifeForm();
 
+		for(int i = 0; i < 3; i++) {
+			enemies.add(new Enemy(null));
+		}
 	}
 
 	public void render(GameContainer c, StateBasedGame game, Graphics g)
@@ -41,9 +46,14 @@ public class GSGame extends BasicGameState {
 		for (LifeForm lf : enemies) {
 			lf.render(g);
 		}
-
+		
 		// render player
-		player.render(g);
+		if(null != player) {
+			player.render(g);
+		} else {
+			g.setColor(Color.white);
+			g.drawString("Game Over!", 200, 290);
+		}
 
 		if (null != hitArea) {
 			hitArea.render(g);
@@ -53,18 +63,51 @@ public class GSGame extends BasicGameState {
 
 	public void update(GameContainer c, StateBasedGame game, int delta)
 			throws SlickException {
-		// TODO Auto-generated method stub
 
-		player.inputForce.x = (leftPressed ? -1 : 0) + (rightPressed ? 1 : 0);
-		player.inputForce.y = (upPressed ? -1 : 0) + (downPressed ? 1 : 0);
-		player.update(delta);
+		// update enemies
+		for (LifeForm lf : enemies) {
+			lf.update(delta);
+		}
+		
+		if(null != player) {
+			if(player.getState() == LifeForm.STATE_DEAD) {
+				hitArea = null;
+				player = null;
+			} else { 
+			
+				player.inputForce.x = (leftPressed ? -1 : 0)
+						+ (rightPressed ? 1 : 0);
+				player.inputForce.y = (upPressed ? -1 : 0)
+						+ (downPressed ? 1 : 0);
+				player.update(delta);
+
+				boolean hit = false;
+				for (LifeForm e : enemies) {
+					if (player.hitTest(e)) {
+						hit = true;
+					}
+				}
+				if (hit) {
+					player.die();
+				}
+			}
+		}
 
 		if (actionPressed) {
-			if (null == hitArea) {
-				hitArea = new HitArea();
-			}
-			hitArea.addPoint(new Vector2f(player.origin.x, player.origin.y));
+			if (null == player) {
+				player = new LifeForm();
+				player.origin = new Vector2f(100, 100);
 
+			} else {
+				if(player.getState() != LifeForm.STATE_DEAD && player.getState() != LifeForm.STATE_DYING) { 
+
+					if (null == hitArea) {
+						hitArea = new HitArea();
+					}
+					
+					hitArea.addPoint(new Vector2f(player.origin.x, player.origin.y));
+				}
+			}
 			actionPressed = false;
 		}
 
@@ -72,9 +115,31 @@ public class GSGame extends BasicGameState {
 			hitArea.update(delta);
 			if (hitArea.state() == HitArea.STATE_DESTROY) {
 				hitArea = null;
+			} else if(hitArea.state() == HitArea.STATE_CLOSED) {
+
+				hitArea.highlight = false;
+				
+				for (LifeForm e : enemies) {
+					if(hitArea.hitTest(e)) {
+						e.die();
+					}
+				}
+				
+			} else {
+			
+				
 			}
 		}
 
+		int enemiesDied = 0;
+		for(LifeForm e : (ArrayList<LifeForm>)enemies.clone()) {
+			if(e.getState() == LifeForm.STATE_DEAD) {
+				enemies.remove(e);
+				enemiesDied ++;
+			}
+		}
+
+		
 	}
 
 	@Override
@@ -118,6 +183,9 @@ public class GSGame extends BasicGameState {
 			break;
 		case Input.KEY_RIGHT:
 			rightPressed = false;
+			break;
+		case Input.KEY_A:
+			enemies.add(new Enemy(null));
 			break;
 		}
 
