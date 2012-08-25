@@ -11,9 +11,16 @@ import org.newdawn.slick.geom.Vector2f;
 
 
 public class HitArea {
+	public final static int STATE_INIT = 0;
+	public final static int STATE_OPEN = 1;
+	public final static int STATE_CLOSED = 2;
+	public final static int STATE_DESTROY = 3;
+	
 	private ArrayList<Vector2f> points = new ArrayList<Vector2f>();
 	
 	private static Image pointImage;
+	
+	private int state = STATE_INIT;
 	
 	int max = 3;
 	
@@ -42,14 +49,23 @@ public class HitArea {
 	}
 	
 	public void addPoint(Vector2f point) {
-		if( shape.closed() ) { return; }
-		
+		if( shape.closed() ) { 
+			state = STATE_DESTROY;
+			return; 
+			
+		}
+		state = STATE_OPEN;
 		this.points.add(point);
 		this.shape.addPoint(point.x, point.y);
 	}
 	
+	public int state() {
+		return state;
+	}
+	
 	public void update(int delta) {
-		if(max == points.size()) {
+		if(max == points.size() && state != STATE_DESTROY) {
+			state = STATE_CLOSED;
 			shape.setClosed(true);
 		}
 	}
