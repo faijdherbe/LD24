@@ -6,6 +6,7 @@ import org.newdawn.slick.state.StateBasedGame;
 
 public class Main extends StateBasedGame {
 	public final static int GAMESTATE_GAME = 10;
+	public final static int GAMESTATE_MENU = 20;
 	
 	
 	public Main(String name) {
@@ -15,6 +16,7 @@ public class Main extends StateBasedGame {
 
 	public void initStatesList(GameContainer c) throws SlickException {
 		// TODO Auto-generated method stub
+		addState(new GSMenu()); //Menu
 		
 		addState(new GSGame()); //  Game
 		

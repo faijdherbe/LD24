@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 
+import net.java.games.input.Controller;
+
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
@@ -25,18 +27,43 @@ public class GSGame extends BasicGameState {
 	int maxActionPoints = 993;
 
 	HitArea hitArea = null;
+
+	
+	int points = 0;
+	int level = 1;
+	int wave = 1;
+	
 	
 	public void init(GameContainer c, StateBasedGame game)
 			throws SlickException {
 		backgroundImage = new Image("res/background.png");
 		lifeForm = new Image("res/LifeForm.png");
-		player = new LifeForm();
 
-		for(int i = 0; i < 3; i++) {
+	}
+
+	@Override
+	public void enter(GameContainer container, StateBasedGame game)
+			throws SlickException {
+		// TODO Auto-generated method stub
+		super.enter(container, game);
+		points = 0;
+		level = 1;
+		wave = 1;
+		
+		enemies.clear();
+		
+		player = new LifeForm();
+		
+		addEnemies(level,wave);
+		
+	}
+	private void addEnemies(int level, int wave) {
+
+		for(int i = 0; i < level; i++) {
 			enemies.add(new Enemy(null));
 		}
 	}
-
+	
 	public void render(GameContainer c, StateBasedGame game, Graphics g)
 			throws SlickException {
 		// background
@@ -58,6 +85,9 @@ public class GSGame extends BasicGameState {
 		if (null != hitArea) {
 			hitArea.render(g);
 		}
+
+		g.drawString(String.format("Level: %d, Wave: %d", level, wave), 100, 10);
+		g.drawString(String.format("Points: %d", points), 100, 20);
 
 	}
 
@@ -95,8 +125,7 @@ public class GSGame extends BasicGameState {
 
 		if (actionPressed) {
 			if (null == player) {
-				player = new LifeForm();
-				player.origin = new Vector2f(100, 100);
+				game.enterState(Main.GAMESTATE_MENU);
 
 			} else {
 				if(player.getState() != LifeForm.STATE_DEAD && player.getState() != LifeForm.STATE_DYING) { 
@@ -136,10 +165,19 @@ public class GSGame extends BasicGameState {
 			if(e.getState() == LifeForm.STATE_DEAD) {
 				enemies.remove(e);
 				enemiesDied ++;
+				points++;
 			}
 		}
 
-		
+		if(enemies.size() == 0) {
+			wave ++;
+			if(wave > 10) {
+				level ++;
+				wave = 1;
+			}
+			
+			addEnemies(level, wave);
+		}
 	}
 
 	@Override
@@ -190,7 +228,56 @@ public class GSGame extends BasicGameState {
 		}
 
 	}
+	
+	@Override
+	public void controllerButtonPressed(int controller, int button) {
+		// TODO Auto-generated method stub
+		super.controllerButtonPressed(controller, button);
 
+		switch (button) {
+		case 1:
+			upPressed = true;
+			break;
+		case 2:
+			downPressed = true;
+			break;
+		case 3:
+			leftPressed = true;
+			break;
+		case 4:
+			rightPressed = true;
+			break;
+		case 12:
+			actionPressed = true;
+			break;
+		}
+
+	}
+
+	@Override
+	public void controllerButtonReleased(int controller, int button) {
+		// TODO Auto-generated method stub
+		super.controllerButtonReleased(controller, button);
+
+		switch (button) {
+		case 1:
+			upPressed = false;
+			break;
+		case 2:
+			downPressed = false;
+			break;
+		case 3:
+			leftPressed = false;
+			break;
+		case 4:
+			rightPressed = false;
+			break;
+		case 15:
+			enemies.add(new Enemy(null));
+			break;
+		}
+	}
+	
 	public int getID() {
 		// TODO Auto-generated method stub
 		return Main.GAMESTATE_GAME;
