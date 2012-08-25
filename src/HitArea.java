@@ -3,10 +3,13 @@ import java.util.ArrayList;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.ShapeFill;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.Sound;
 import org.newdawn.slick.geom.Circle;
 import org.newdawn.slick.geom.Polygon;
+import org.newdawn.slick.geom.Shape;
+import org.newdawn.slick.geom.ShapeRenderer;
 import org.newdawn.slick.geom.Vector2f;
 
 public class HitArea {
@@ -115,14 +118,15 @@ public class HitArea {
 	}
 
 	public boolean hitTest(LifeForm e) {
-		return shape.contains(e.origin.x + 8, e.origin.y + 8);
+		//return shape.contains(new Circle(e.origin.x, e.origin.y, e.getRadius()*0.25f));
+		return shape.contains(e.origin.x, e.origin.y);
 	}
 
 	public void render(Graphics g) {
 		if (shape.closed()) {
 			if (state == STATE_CLOSED || state == STATE_DESTROYING) {
 
-				g.setColor(new Color(0, 255, 0, 128));
+				g.setColor(new Color(0.0f,1.0f,0.0f,0.2f));
 			} else if (state == STATE_CLOSED_INVALID) {
 				g.setColor(new Color(255, 0, 0, 128));
 			} else {

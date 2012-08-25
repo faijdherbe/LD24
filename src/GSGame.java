@@ -87,7 +87,8 @@ public class GSGame extends BasicGameState {
 		}
 
 		g.drawString(String.format("Level: %d, Wave: %d", level, wave), 100, 10);
-		g.drawString(String.format("Points: %d", points), 100, 20);
+		g.drawString(String.format("Points: %d", points), 100, 30);
+		g.drawString(String.format("Enemies: %d", enemies.size()), 100, 50);
 
 	}
 
@@ -131,7 +132,7 @@ public class GSGame extends BasicGameState {
 				if(player.getState() != LifeForm.STATE_DEAD && player.getState() != LifeForm.STATE_DYING) { 
 
 					if (null == hitArea) {
-						hitArea = new HitArea();
+						hitArea = new HitArea(player.tailLevel + 2);
 					}
 					
 					hitArea.addPoint(new Vector2f(player.origin.x, player.origin.y));
@@ -171,9 +172,11 @@ public class GSGame extends BasicGameState {
 
 		if(enemies.size() == 0) {
 			wave ++;
-			if(wave > 10) {
+			if(wave > 5) {
 				level ++;
 				wave = 1;
+				player.speedLevel++;
+				player.tailLevel++;
 			}
 			
 			addEnemies(level, wave);
@@ -221,6 +224,24 @@ public class GSGame extends BasicGameState {
 			break;
 		case Input.KEY_RIGHT:
 			rightPressed = false;
+			break;
+		case Input.KEY_U:
+			player.addSpeedLevel(1);
+			break;
+		case Input.KEY_J:
+			player.addSpeedLevel(-1);
+			break;
+		case Input.KEY_I:
+			player.addAgilityLevel(1);
+			break;
+		case Input.KEY_K:
+			player.addAgilityLevel(-1);
+			break;
+		case Input.KEY_O:
+			player.addTailLevel(1);
+			break;
+		case Input.KEY_L:
+			player.addTailLevel(-1);
 			break;
 		case Input.KEY_A:
 			enemies.add(new Enemy(null));

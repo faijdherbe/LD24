@@ -18,6 +18,7 @@ public class LifeForm {
 	
 	Vector2f origin = new Vector2f(100,100);
 	protected ESprite lfImage;
+	protected ESprite lfWalkImage;
 	
 	public Vector2f inputForce = new Vector2f(0,0);
 	public Vector2f velocity = new Vector2f(0,0);
@@ -30,15 +31,39 @@ public class LifeForm {
 	
 	protected Color color = Color.white;
 	
+	int tailLevel = 1, tailLevelMax = 10;
+	int speedLevel = 3, speedLevelMax = 10;
+	int agilityLevel = 1, agilityLevelMax = 10;
+	
+	public float getRadius() {
+		return 8 * (1 + (speedLevel/(float)speedLevelMax));
+	}
+
+	public void addSpeedLevel(int a) {
+		speedLevel = Math.max(1, Math.min(speedLevelMax, speedLevel+a));
+		
+	}
+
+	public void addAgilityLevel(int a) {
+		agilityLevel = Math.max(1, Math.min(agilityLevelMax, agilityLevel+a));
+		
+	}
+
+	public void addTailLevel(int a) {
+		tailLevel = Math.max(1, Math.min(tailLevelMax, tailLevel+a));
+	}
+	
 	public LifeForm() {
 		if(null == lfImage) {
 			try {
-				lfImage = new ESprite("res/LifeForm.png",16,16);
+				lfImage = new ESprite("res/LifeForm.png",24,24);
+				lfWalkImage = new ESprite("res/LifeForm.png", 24, 24);
 				
 				lfImage.addAnimation("idle", 1, new int[] {0}, true);
 				lfImage.addAnimation("die", 12, new int[] {1,2,3}, true);
+				lfWalkImage.addAnimation("walk", 12, new int[] {4,5,6,7}, true);
 				
-				lfImage.setCenterOfRotation(8, 8);
+				lfImage.setCenterOfRotation(12,12);
 			} catch (SlickException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -58,12 +83,12 @@ public class LifeForm {
 		Vector2f d = new Vector2f(Math.abs(this.origin.x - e.origin.x), 
 				Math.abs(this.origin.y - e.origin.y));
 		
-		return  Math.sqrt(d.x*d.x + d.y*d.y) < 16;  
+		return  Math.sqrt(d.x*d.x + d.y*d.y) < (e.getRadius() + this.getRadius());  
 	}
 	
 	public void update(int delta) {
 		lfImage.update(delta);
-		
+		lfWalkImage.update(delta);
 		
 		
 		if(state == STATE_DYING) {
@@ -92,22 +117,37 @@ public class LifeForm {
 		
 		velocity.x += inputForce.x * 0.1f;
 		velocity.y += inputForce.y * 0.1f;
+
 		
-		origin.x += velocity.x;
-		origin.y += velocity.y;
+		Vector2f v = velocity.copy();
+		v.scale(speedLevel/(float)speedLevelMax);
+		
+		
+		origin.x += v.x;
+		origin.y += v.y;
 		
 		
 	}
 	
 	public void render(Graphics g) {
 		Image img = lfImage.getImage();
-		
+		Image walkImg = lfWalkImage.getImage();
 
-		for(int i = 0; i < 4; i ++) {
-			img.setColor(i, color.r, color.g, color.b, 1);
-		}
+		float d = 1 + (speedLevel/(float)speedLevelMax);
 		
-		g.drawImage(img, origin.x-8, origin.y-8);
+		float x = origin.x - (12 * d);
+		float y = origin.y - (12 * d);
+		
+//		float ang = (float)Math.atan2(velocity.x, velocity.y);
+		//walkImg.setRotation(180*ang);
+		//img.setRotation(180*ang);
+		
+		g.drawImage(img, x, y, x + (24*d), y + (24*d), 0, 0, 24, 24, color);
+		g.drawImage(walkImg, x, y, x + (24*d), y + (24*d), 0, 0, 24, 24, color);
+
+//		img.drawCentered(x,y);
+		
+//		walkImg.drawCentered(x, y);
 	}
 	
 	public void die() {

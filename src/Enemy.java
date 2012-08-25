@@ -20,6 +20,8 @@ public class Enemy extends LifeForm {
 			e.printStackTrace();
 		}
 		color = Color.red;
+		
+		addSpeedLevel((int)Math.round(Math.random() * 10));
 	}
 	
 	@Override
