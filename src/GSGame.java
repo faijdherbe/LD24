@@ -196,7 +196,9 @@ public class GSGame extends BasicGameState {
 				level ++;
 				wave = 1;
 				//player.speedLevel++;
-				player.addTailLevel(1);
+				if(player != null) {
+					player.addTailLevel(1);
+				}
 			}
 			
 			addEnemies(level, wave);
@@ -257,9 +259,9 @@ public class GSGame extends BasicGameState {
 //		case Input.KEY_K:
 //			player.addAgilityLevel(-1);
 //			break;
-//		case Input.KEY_O:
-//			player.addTailLevel(1);
-//			break;
+		case Input.KEY_O:
+			player.addTailLevel(1);
+			break;
 //		case Input.KEY_L:
 //			player.addTailLevel(-1);
 //			break;
