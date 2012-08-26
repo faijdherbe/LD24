@@ -7,7 +7,7 @@ import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Vector2f;
 
 
-public class LifeForm {
+public class LifeForm extends Joint {
 	public final static int STATE_INIT = 0;
 	public final static int STATE_ALIVE = 1;
 	public final static int STATE_DYING = 2;
@@ -16,7 +16,7 @@ public class LifeForm {
 	
 	private int state = STATE_INIT;
 	
-	Vector2f origin = new Vector2f(100,100);
+	//Vector2f origin = new Vector2f(100,100);
 	protected ESprite lfImage;
 	protected ESprite lfWalkImage;
 	
@@ -32,7 +32,7 @@ public class LifeForm {
 	protected Color color = Color.white;
 	
 	int tailLevel = 1, tailLevelMax = 10;
-	int speedLevel = 3, speedLevelMax = 10;
+	int speedLevel = 4, speedLevelMax = 10;
 	int agilityLevel = 1, agilityLevelMax = 10;
 	
 	public float getRadius() {
@@ -51,13 +51,27 @@ public class LifeForm {
 
 	public void addTailLevel(int a) {
 		tailLevel = Math.max(1, Math.min(tailLevelMax, tailLevel+a));
+		
+		Joint lastJoint = this;
+		while(lastJoint.child != null) {
+			lastJoint = lastJoint.child;
+		}
+		
+		if(a > 0) {
+			Tailpiece p = new Tailpiece();
+			lastJoint.child = p;
+			p.parent = lastJoint;		
+		} else {
+			lastJoint.parent.child = null;
+			lastJoint.parent = null;
+		}
 	}
 	
 	public LifeForm() {
 		if(null == lfImage) {
 			try {
-				lfImage = new ESprite("res/LifeForm.png",24,24);
-				lfWalkImage = new ESprite("res/LifeForm.png", 24, 24);
+				lfImage = new ESprite("LifeForm.png",24,24);
+				lfWalkImage = new ESprite("LifeForm.png", 24, 24);
 				
 				lfImage.addAnimation("idle", 1, new int[] {0}, true);
 				lfImage.addAnimation("die", 12, new int[] {1,2,3}, true);
@@ -70,20 +84,36 @@ public class LifeForm {
 			}
 		}
 		try {
-			dieSound = new Sound("res/playerDie.wav");
+			dieSound = new Sound("playerDie.wav");
 		} catch (SlickException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		origin = new Vector2f(100, 10);
+		
 	}
 	
-	public boolean hitTest(LifeForm e) {
-		Vector2f d = new Vector2f(Math.abs(this.origin.x - e.origin.x), 
-				Math.abs(this.origin.y - e.origin.y));
+	@Override
+	public boolean hitTest(Joint e) {
+		// TODO Auto-generated method stub
+		boolean didHit = super.hitTest(e);
+		Joint lastJoint = this;
 		
-		return  Math.sqrt(d.x*d.x + d.y*d.y) < (e.getRadius() + this.getRadius());  
+		while (didHit == false && lastJoint.child != null) {
+			lastJoint = lastJoint.child;
+			didHit = lastJoint.hitTest(e);
+		}
+		
+		return didHit;
+	}
+	
+	public Vector2f getDropPoint() {
+		Joint lastJoint = this;
+		while(lastJoint.child != null) {
+			lastJoint = lastJoint.child;
+		}
+		return new Vector2f(lastJoint.origin);
 	}
 	
 	public void update(int delta) {
@@ -126,7 +156,7 @@ public class LifeForm {
 		origin.x += v.x;
 		origin.y += v.y;
 		
-		
+		super.update(delta);
 	}
 	
 	public void render(Graphics g) {
@@ -143,11 +173,12 @@ public class LifeForm {
 		//img.setRotation(180*ang);
 		
 		g.drawImage(img, x, y, x + (24*d), y + (24*d), 0, 0, 24, 24, color);
-		g.drawImage(walkImg, x, y, x + (24*d), y + (24*d), 0, 0, 24, 24, color);
+		//g.drawImage(walkImg, x, y, x + (24*d), y + (24*d), 0, 0, 24, 24, color);
 
 //		img.drawCentered(x,y);
 		
 //		walkImg.drawCentered(x, y);
+		super.render(g);
 	}
 	
 	public void die() {

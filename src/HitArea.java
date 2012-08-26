@@ -53,15 +53,15 @@ public class HitArea {
 		shape.setClosed(false);
 
 		try {
-			pointImage = new Image("res/point.png");
+			pointImage = new Image("point.png");
 		} catch (SlickException e) {
 			e.printStackTrace();
 		}
 		state = STATE_OPEN;
 		
 		try {
-			dropPoint = new Sound("res/dropPoint.wav");
-			pointFix = new Sound("res/pointFix.wav");
+			dropPoint = new Sound("dropPoint.wav");
+			pointFix = new Sound("pointFix.wav");
 		} catch(SlickException e) {}
 	}
 

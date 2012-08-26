@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 
 import net.java.games.input.Controller;
@@ -7,6 +8,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
+import org.newdawn.slick.SavedState;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.Sound;
 import org.newdawn.slick.geom.Vector2f;
@@ -36,8 +38,8 @@ public class GSGame extends BasicGameState {
 	
 	public void init(GameContainer c, StateBasedGame game)
 			throws SlickException {
-		backgroundImage = new Image("res/background.png");
-		lifeForm = new Image("res/LifeForm.png");
+		backgroundImage = new Image("background.png");
+		lifeForm = new Image("LifeForm.png");
 
 	}
 
@@ -86,9 +88,9 @@ public class GSGame extends BasicGameState {
 			hitArea.render(g);
 		}
 
-		g.drawString(String.format("Level: %d, Wave: %d", level, wave), 100, 10);
-		g.drawString(String.format("Points: %d", points), 100, 30);
-		g.drawString(String.format("Enemies: %d", enemies.size()), 100, 50);
+		g.drawString(String.format("Level: %d, Wave: %d/5", level, wave), 400, 10);
+		g.drawString(String.format("Score: %d", points), 400, 30);
+		//g.drawString(String.format("Enemies: %d", enemies.size()), 100, 50);
 
 	}
 
@@ -104,6 +106,24 @@ public class GSGame extends BasicGameState {
 			if(player.getState() == LifeForm.STATE_DEAD) {
 				hitArea = null;
 				player = null;
+				
+
+				SavedState savedState = new SavedState("evolutionSavedState");
+				try {
+					savedState.load();
+					double highscore = savedState.getNumber("highscore");
+					
+					if(points > highscore) {
+						savedState.setNumber("highscore", points);
+						savedState.save();
+					}
+					
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		
+				
 			} else { 
 			
 				player.inputForce.x = (leftPressed ? -1 : 0)
@@ -126,7 +146,7 @@ public class GSGame extends BasicGameState {
 
 		if (actionPressed) {
 			if (null == player) {
-				game.enterState(Main.GAMESTATE_MENU);
+				game.enterState(LD24Evolution.GAMESTATE_MENU);
 
 			} else {
 				if(player.getState() != LifeForm.STATE_DEAD && player.getState() != LifeForm.STATE_DYING) { 
@@ -134,8 +154,8 @@ public class GSGame extends BasicGameState {
 					if (null == hitArea) {
 						hitArea = new HitArea(player.tailLevel + 2);
 					}
-					
-					hitArea.addPoint(new Vector2f(player.origin.x, player.origin.y));
+					Vector2f dropPoint = player.getDropPoint();
+					hitArea.addPoint(dropPoint);
 				}
 			}
 			actionPressed = false;
@@ -175,8 +195,8 @@ public class GSGame extends BasicGameState {
 			if(wave > 5) {
 				level ++;
 				wave = 1;
-				player.speedLevel++;
-				player.tailLevel++;
+				//player.speedLevel++;
+				player.addTailLevel(1);
 			}
 			
 			addEnemies(level, wave);
@@ -225,27 +245,27 @@ public class GSGame extends BasicGameState {
 		case Input.KEY_RIGHT:
 			rightPressed = false;
 			break;
-		case Input.KEY_U:
-			player.addSpeedLevel(1);
-			break;
-		case Input.KEY_J:
-			player.addSpeedLevel(-1);
-			break;
-		case Input.KEY_I:
-			player.addAgilityLevel(1);
-			break;
-		case Input.KEY_K:
-			player.addAgilityLevel(-1);
-			break;
-		case Input.KEY_O:
-			player.addTailLevel(1);
-			break;
-		case Input.KEY_L:
-			player.addTailLevel(-1);
-			break;
-		case Input.KEY_A:
-			enemies.add(new Enemy(null));
-			break;
+//		case Input.KEY_U:
+//			player.addSpeedLevel(1);
+//			break;
+//		case Input.KEY_J:
+//			player.addSpeedLevel(-1);
+//			break;
+//		case Input.KEY_I:
+//			player.addAgilityLevel(1);
+//			break;
+//		case Input.KEY_K:
+//			player.addAgilityLevel(-1);
+//			break;
+//		case Input.KEY_O:
+//			player.addTailLevel(1);
+//			break;
+//		case Input.KEY_L:
+//			player.addTailLevel(-1);
+//			break;
+//		case Input.KEY_A:
+//			enemies.add(new Enemy(null));
+//			break;
 		}
 
 	}
@@ -301,7 +321,7 @@ public class GSGame extends BasicGameState {
 	
 	public int getID() {
 		// TODO Auto-generated method stub
-		return Main.GAMESTATE_GAME;
+		return LD24Evolution.GAMESTATE_GAME;
 	}
 
 }

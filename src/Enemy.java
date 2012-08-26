@@ -14,14 +14,14 @@ public class Enemy extends LifeForm {
 
 
 		try {
-			dieSound = new Sound("res/enemyDie.wav");
+			dieSound = new Sound("enemyDie.wav");
 		} catch (SlickException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		color = Color.red;
-		
-		addSpeedLevel((int)Math.round(Math.random() * 10));
+		speedLevel = 5;
+		//addSpeedLevel((int)Math.round(Math.random() * 10));
 	}
 	
 	@Override
